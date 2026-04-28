@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: StarEast Commerce API
+  version: 1.0.0
+  description: Simple in-memory e-commerce API with JWT authentication and checkout rules.
+servers:
+  - url: http://localhost:3000
+paths:
+  /healthcheck:
+    get:
+      summary: Healthcheck endpoint
+      responses:
+        "200":
+          description: API healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - username
+                - password
+              properties:
+                name:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "201":
+          description: User created
+        "400":
+          description: Validation or duplicate username error
+  /login:
+    post:
+      summary: Authenticate user and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: JWT token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        "401":
+          description: Invalid credentials
+  /checkout:
+    post:
+      summary: Perform checkout (authenticated)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - paymentMethod
+                - items
+              properties:
+                paymentMethod:
+                  type: string
+                  enum: [cash, credit_card]
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - productId
+                      - quantity
+                    properties:
+                      productId:
+                        type: integer
+                      quantity:
+                        type: integer
+      responses:
+        "200":
+          description: Checkout completed
+        "400":
+          description: Invalid payload or business rule validation
+        "401":
+          description: Missing or invalid JWT
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
