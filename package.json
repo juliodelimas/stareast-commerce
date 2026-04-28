@@ -4,7 +4,8 @@
   "description": "Simple e-commerce REST API with JWT checkout flow",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "mocha \"test/pathCoverage/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=test-report,reportFilename=path-coverage-report,quiet=true,overwrite=true,html=true,json=true"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +15,11 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.5.0",
+    "mochawesome": "^7.1.3",
+    "supertest": "^7.1.1"
   }
 }
