@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "mocha \"test/pathCoverage/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=test-report,reportFilename=path-coverage-report,quiet=true,overwrite=true,html=true,json=true"
+    "test": "mocha \"test/pathCoverage/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=test-report,reportFilename=path-coverage-report,quiet=true,overwrite=true,html=true,json=true",
+    "test:load:login": "k6 run test/loadTesting/login.loadtest.js"
   },
   "keywords": [],
   "author": "",
