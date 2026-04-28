@@ -1,51 +1,80 @@
 # StarEast Commerce API
 
-## Description
-Simple REST API for an e-commerce checkout flow using JavaScript, Express, JWT authentication, and in-memory data only.
+Simple REST API for an e-commerce checkout flow built with Express and JWT auth, using in-memory data only.
 
-## Installation
+## Tech Stack
+
+- Node.js
+- Express
+- JWT (`jsonwebtoken`)
+- OpenAPI docs via Swagger UI
+- Mocha + Chai + Supertest + Mochawesome
+- k6 load testing
+
+## Getting Started
+
+### 1) Install dependencies
+
 ```bash
 npm install
 ```
 
-## How to Run
+### 2) Run the API
+
 ```bash
 npm start
 ```
 
-API base URL: `http://localhost:3000`  
-Swagger UI: `http://localhost:3000/docs`
+The server starts on `http://localhost:3000` by default.
 
-## Rules
+## Environment Variables
+
+- `PORT` (optional): defaults to `3000`
+- `JWT_SECRET` (optional): defaults to `simple-secret`
+
+## API Documentation
+
+- Swagger UI: `http://localhost:3000/docs`
+- OpenAPI source: `src/docs/swagger.yaml`
+
+## Available Endpoints
+
+- `GET /healthcheck`
+- `POST /register`
+- `POST /login`
+- `POST /checkout` (requires `Authorization: Bearer <token>`)
+
+## Business Rules
+
 - Checkout accepts only `cash` or `credit_card`.
-- `cash` payment gives a `10%` discount.
-- Only authenticated users can perform checkout.
-- Only four business endpoints are exposed: `register`, `login`, `checkout`, and `healthcheck`.
+- `cash` checkout applies a `10%` discount.
+- Checkout requires a valid JWT token.
+- Products and users are stored in memory (no database).
 
-## Data Already Existent
-### Users (3)
+## Seed Data (In-Memory)
+
+### Users
+
 - `{ "id": 1, "name": "Alice Carter", "username": "alice", "password": "alice123" }`
 - `{ "id": 2, "name": "Bruno Lima", "username": "bruno", "password": "bruno123" }`
 - `{ "id": 3, "name": "Carla Souza", "username": "carla", "password": "carla123" }`
 
-### Products (3)
+### Products
+
 - `{ "id": 1, "name": "T-Shirt", "price": 100 }`
 - `{ "id": 2, "name": "Sneakers", "price": 250 }`
 - `{ "id": 3, "name": "Backpack", "price": 180 }`
 
-## How to Use the Rest API
-### 1) Healthcheck
-`GET /healthcheck`
+## Example Requests
 
-Example:
+### Healthcheck
+
 ```bash
 curl http://localhost:3000/healthcheck
 ```
 
-### 2) Register
-`POST /register`
+### Register
 
-Example:
 ```bash
 curl -X POST http://localhost:3000/register \
   -H "Content-Type: application/json" \
@@ -56,10 +85,8 @@ curl -X POST http://localhost:3000/register \
   }'
 ```
 
-### 3) Login
-`POST /login`
+### Login
 
-Example:
 ```bash
 curl -X POST http://localhost:3000/login \
   -H "Content-Type: application/json" \
@@ -69,17 +96,14 @@ curl -X POST http://localhost:3000/login \
   }'
 ```
 
-Response returns:
+Response example:
+
 ```json
 { "token": "JWT_TOKEN_HERE" }
 ```
 
-### 4) Checkout (Authenticated)
-`POST /checkout`
+### Checkout (Authenticated)
 
-Use `Authorization: Bearer <token>`
-
-Example:
 ```bash
 curl -X POST http://localhost:3000/checkout \
   -H "Content-Type: application/json" \
@@ -93,4 +117,44 @@ curl -X POST http://localhost:3000/checkout \
   }'
 ```
 
-If `paymentMethod` is `cash`, the API applies 10% discount in the checkout result.
+Expected behavior for the payload above:
+
+- `subtotal`: `380`
+- `discount`: `38`
+- `total`: `342`
+
+## Common Error Responses
+
+- `400` on invalid payloads (missing required fields, invalid payment method, empty/invalid items, unknown product).
+- `401` on auth failures (invalid credentials, missing token, invalid or expired token).
+
+## Testing
+
+### Path coverage/API tests
+
+```bash
+npm test
+```
+
+This runs `test/pathCoverage/**/*.spec.js` and generates a Mochawesome report in `test-report/`.
+
+### Login load test (k6)
+
+```bash
+npm run test:load:login
+```
+
+You can override the target URL:
+
+```bash
+BASE_URL=http://localhost:3000 npm run test:load:login
+```
+
+## CI
+
+GitHub Actions workflow `api-tests.yml` runs on pull requests to `main` and:
+
+1. installs dependencies,
+2. starts the API,
+3. waits for `/healthcheck`,
+4. runs `npm test`.
